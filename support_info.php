@@ -685,8 +685,8 @@ $m_l = convertBytes(ini_get('memory_limit'));
 			echo 'SMTP server port: ' . $config['smtp_port'] . '<br />';
 			echo 'Authentication method for SMTP: ' . (ucfirst(strtolower($config['smtp_auth_method']))) . '<br />';
 			$smtp_user = ($config['smtp_username']);
+			// We'll replace the local part of the email address with asterisks
 			$smtp_split = strrpos($smtp_user, "@");
-			// We'll replace the local part of the email adddress with asterisks
 			$local = preg_replace('(.)', '*', (substr($smtp_user, 0, $smtp_split)));
 			$domain = substr($smtp_user, $smtp_split);
 			echo 'SMTP username: ' . $local . $domain . '<br />';		
@@ -1225,11 +1225,11 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		echo 'Board start date: ' . date('d M Y', $config['board_startdate']) . '<br />';
 		if(defined('PHPBB_VERSION'))
 		{
-			echo 'Constant version: ' . PHPBB_VERSION . '<br />';
+			echo 'constants.php version: ' . PHPBB_VERSION . '<br />';
 		}
 		else
 		{
-			echo 'Constant version: Not defined (constant not accessible or version &#60; 3.0.3)<br />';
+			echo 'constants.php version: Not defined (constant not accessible or version &#60; 3.0.3)<br />';
 		}
 		echo 'Cached version: ' . $config['version'] . '<br />';
 		$sql = 'SELECT config_name, config_value FROM ' . CONFIG_TABLE . ' WHERE config_name = "version"
