@@ -1,6 +1,6 @@
 <?php
 // copyright (c) Oyabun1 2013
-// version 1.4.4
+// version 1.4.5
 // license http://opensource.org/licenses/gpl-license.php GNU Public License
 
 define('IN_PHPBB', true);
