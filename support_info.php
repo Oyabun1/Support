@@ -1,6 +1,6 @@
 <?php
 // copyright (c) Oyabun1 2013
-// version 1.4.4
+// version 1.4.6
 // license http://opensource.org/licenses/gpl-license.php GNU Public License
 
 define('IN_PHPBB', true);
@@ -863,8 +863,18 @@ $m_l = convertBytes(ini_get('memory_limit'));
 			get_formatted_filesize(min($u_m_f, $p_m_s, $m_l)) . '<br />';
 		echo 'Max execution time: ' . (int)(ini_get('max_execution_time')) . ' secs<br />';
 		echo 'Max input time: ' . (int)(ini_get('max_input_time')) . ' secs<br />';
-		echo 'file_uploads enabled: ' . ((@ini_get('file_uploads') == '1' || 
-		strtolower(@ini_get('file_uploads')) === 'on') ? 'Yes' : 'No') . '<br />';
+		echo 'file_uploads: ' . ((@ini_get('file_uploads') == '1' || 
+		strtolower(@ini_get('file_uploads')) === 'on') ? 'Enabled' : 'Disabled') . '<br />';
+		echo 'allow_url_fopen: ' . (ini_get('allow_url_fopen') ? 'Enabled' : 'Disabled') . '<br />';
+		// Check if some PHP extensions are available
+		$loaded_ext = get_loaded_extensions();
+		$modules_maybe = array('curl', 'ftp', 'pcre', 'zlib', 'mbstring', 'libxml', 'gd', 'mysqli');
+		$compared = array_diff($modules_maybe, $loaded_ext);
+			foreach($compared as $not_loaded)
+			{
+				echo $not_loaded . ' PHP extension not available<br />';
+			}
+			unset($not_loaded);
 		// Check if GD library loaded
 		if (extension_loaded('gd') && function_exists('gd_info'))
 		{
@@ -1266,19 +1276,19 @@ echo '</fieldset>';
 if($chk_delete == 'Yes')
 {
 	// Have to give the message before deleting the file because if successful there is no file to return a message
-	echo '<p style="width: 770px; margin-left: 10px; padding-left: 10px; background-color: #F08080">If no other message shows below this then file DELETED</p>';
+	echo '<p style="width: 770px; margin-left: 10px; padding-left: 10px; background-color: #F08080">If no other message shows below this then file is DELETED</p>';
 	// We'll try to change file permissions just to make sure they are sufficient, then unlink the file
 	chmod(__FILE__, 0777);
 	@unlink(__FILE__);  // Eat any errors 
 	// Windows IIS servers apparently have a problem with unlinking recently created files.
     // If file still exists give a message
-		if (file_exists(__FILE__))
-		{
-			// Try to change permissions back to a safer 644
-			chmod(__FILE__, 0644);
-			echo '<p style="width: 770px; margin-left: 10px; padding-left: 10px; font-size: 1.3em; background-color: #F08080">File could not be deleted. You will need to manually delete the
-			    file from the server.</p>';
-		}
+	if (file_exists(__FILE__))
+	{
+		// Try to change permissions back to a safer 644
+		chmod(__FILE__, 0644);
+		echo '<p style="width: 770px; margin-left: 10px; padding-left: 10px; font-size: 1.3em; background-color: #F08080">File could not be deleted. You will need to manually delete the
+		    file from the server.</p>';
+	}
 }
 else 
 {
