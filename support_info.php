@@ -1,7 +1,7 @@
 <?php
-// copyright (c) Oyabun1 2013
-// version 1.4.5
-// license http://opensource.org/licenses/gpl-license.php GNU Public License
+// Copyright © Oyabun1 2013
+// version 1.5.5
+// license http://opensource.org/licenses/GPL-2.0 GNU General Public License v2
 
 define('IN_PHPBB', true);
 $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
@@ -32,11 +32,13 @@ echo '<style type="text/css">
 	}
 
 	#selectable {
+	cursor: copy;
 	line-height: 1.1;
 	}
 	
 	label {
-		background-color: #EEE9D7;
+		cursor: pointer;
+		background-color: #b3ffb3;
 		border-style: outset;
 		border-width; 1px;
 		border-radius: 3px;
@@ -44,6 +46,25 @@ echo '<style type="text/css">
 		font-size: 1.1em;
 		padding: 1.5px;
 		margin: 1.5px;
+	}
+
+	label.disabled {
+		cursor: not-allowed;
+		-moz-opacity: .5;
+		-webkit-opacity: .5;
+		opacity: .5;
+	}
+	
+	input[type="checkbox"]{
+		cursor: pointer;
+	}
+	
+	input[type="checkbox"]:disabled
+	{
+		cursor: not-allowed;
+		-moz-opacity: .6;
+		-webkit-opacity: .6;
+		opacity: .6;
 	}
 
 	/* Buttons based on Pressable CSS Buttons by Joshua Hibbert */
@@ -107,21 +128,24 @@ echo '<style type="text/css">
 		background-color: #228B22;
 	}
 </style>';
+
 echo '</head>';
 echo '<body>';
 // Some JavaScript used to select all the text to be copied. JavaScript is a tool of demons, but ...
 echo '<script type="text/javascript">
-		function selectText(containerid) {
-			if (document.selection) {
-				var range = document.body.createTextRange();
-				range.moveToElementText(document.getElementById(containerid));
-				range.select();
-			} else if (window.getSelection) {
-				var range = document.createRange();
-				range.selectNode(document.getElementById(containerid));
-				window.getSelection().addRange(range);
-			}
-		}
+    function selectText(txt) {
+        if (typeof window.getSelection != "undefined" && typeof document.createRange != "undefined") {
+            var range = document.createRange();
+            range.selectNodeContents(txt);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } else if (typeof document.selection != "undefined" && typeof document.body.createTextRange != "undefined") {
+            var textRange = document.body.createTextRange();
+            textRange.moveToElementText(txt);
+            textRange.select();
+        }
+    }
 </script>';
 
 // Create some checkboxes to select info categories
@@ -133,26 +157,45 @@ echo '<label title="Activation, countermeasure, and ban info"><input type="check
 	value="Yes" />Anti-Spam&nbsp;</label>&nbsp;';
 echo '<label title="Attachment settings"><input type="checkbox" name="chkAttach" value="Yes" />
 	Attachments&nbsp;</label>&nbsp;';
+echo '<label title="AutoMOD settings"><input type="checkbox" name="chkAutomod" value="Yes" />
+	AutoMOD&nbsp;</label>&nbsp;';
 echo '<label title="Avatar settings"><input type="checkbox" name="chkAvatar" value="Yes" />
 	Avatar&nbsp;</label>&nbsp;';
-echo '<label title="Cookie settings from database"><input type="checkbox" name="chkCookies" value="Yes" />
-	Cookies&nbsp;</label>&nbsp;'; 
 echo '<br />';
+	echo '<label title="Cookie settings from database"><input type="checkbox" name="chkCookies" value="Yes" />
+	Cookies&nbsp;</label>&nbsp;'; 
+
 echo '<label title="Database (config.php) details"><input type="checkbox" name="chkDbase" value="Yes" />
 	Database&nbsp;</label>&nbsp;';
 echo '<label title="Email settings"><input type="checkbox" name="chkEmail" value="Yes" />
-	Email&nbsp;</label>&nbsp;';  
+	Email&nbsp;</label>&nbsp;';
+echo '<label title="File check"><input type="checkbox" name="chkFile" value="Yes" />
+	Files&nbsp;</label>&nbsp;';
 echo '<label title="Some basic stats: users, topics, posts, languages, &amp; stuff like that"><input 
 		type="checkbox" name="chkOther" value="Yes" />Other&nbsp;</label>&nbsp;';
+echo '<br />';
 echo '<label title="Paths and permissions"><input type="checkbox" name="chkPaths" value="Yes" />
 		Paths&nbsp;</label>&nbsp;';  
-echo '<label title="PHP settings mainly related to files and images"><input type="checkbox" name="chkPHP"
+
+		echo '<label title="PHP settings mainly related to files and images"><input type="checkbox" name="chkPHP"
 		value="Yes" />PHP Info&nbsp;</label>&nbsp;';
-echo '<br />';
+
 echo '<label title="ACP Search settings">
 		<input type="checkbox" name="chkSearch" value="Yes" /> Search&nbsp;</label>&nbsp;';
-echo '<label title="ACP Server settings, languages & deactivated modules">
+// Check if 3.1.x if so don't show Server button because the functions it uses throw errors at the moment
+$version = PHPBB_VERSION;
+$vers_num = '3.1.';
+$ascraeus = strpos($version, $vers_num);
+if ($ascraeus === false)
+{
+	echo '<label title="ACP Server settings, languages & deactivated modules">
 		<input type="checkbox" name="chkServer" value="Yes" /> Server&nbsp;</label>&nbsp;';
+}
+else
+{
+	echo '<label class="disabled" title="ACP Server settings, languages & deactivated modules">
+		<input type="checkbox" name="chkServer" value="Yes" disabled = "disabled" /> Server&nbsp;</label>&nbsp;';
+}
 echo '<label title="Active and Deactivated styles"><input type="checkbox" name="chkStyles" value="Yes" />
 		Styles&nbsp;</label>&nbsp;'; 
 echo '<label title="Version info"><input type="checkbox" name="chkVersion"
@@ -164,7 +207,7 @@ echo '<fieldset style="background-color:#F5FCFF; border-color:#00CC00; border-st
 		<strong>Copy and paste the lines below to the appropriate topic at phpbb.com (click to select text)
 		</strong></legend>';
 // Use the JavaScript from above
-echo '<div id="selectable" onclick="selectText(\'selectable\')">';
+echo '<div id="selectable" onclick="selectText(this)">';
 
 // Use request_var() to get the returned values 
 // since using $_POST() is discouraged (& phpBB 3.1 will have a dummy spit)
@@ -172,9 +215,11 @@ $chk_anon = (request_var('chkAnon', ''));
 $chk_aspam = (request_var('chkASpam', ''));
 $chk_attach  = (request_var('chkAttach', ''));
 $chk_avatar = (request_var('chkAvatar', ''));
+$chk_automod = (request_var('chkAutomod', ''));
 $chk_cookies = (request_var('chkCookies', ''));
 $chk_dbase = (request_var('chkDbase', ''));
 $chk_email = (request_var('chkEmail', ''));
+$chk_file = (request_var('chkFile', ''));
 $chk_other = (request_var('chkOther', ''));
 $chk_paths = (request_var('chkPaths', ''));
 $chk_php = (request_var('chkPHP', ''));
@@ -183,8 +228,9 @@ $chk_server = (request_var('chkServer', ''));
 $chk_styles = (request_var('chkStyles', ''));
 $chk_version = (request_var('chkVersion', ''));
 $chk_delete = (request_var('chkDelete', ''));
-	// A function to get around PHP shortcuts in php.ini values
-	// borrowed from http://www.php.net/manual/de/faq.using.php#78405
+
+// A function to get around PHP shortcuts in php.ini values
+// borrowed from http://www.php.net/manual/de/faq.using.php#78405
 function convertBytes($value) 
 {
 	if(is_numeric($value)) 
@@ -211,10 +257,12 @@ function convertBytes($value)
 		return $qty;
 	}
 }
-// Create a few variables to shorten lines later on
+
+// Create a few variables to shorten lines below
 $u_m_f = convertBytes(ini_get('upload_max_filesize'));
 $p_m_s = convertBytes(ini_get('post_max_size'));
 $m_l = convertBytes(ini_get('memory_limit'));
+
 // Grab the data and display it depending on which checkboxes are selected
 	if ($chk_anon == 'Yes')
 		{
@@ -265,7 +313,8 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		echo ucfirst(strtolower($row['group_name'])) . '<br />';
 		}
 		$db->sql_freeresult($result);
-			$sql = 'SELECT u.user_id, username, username_clean
+		
+		$sql = 'SELECT u.user_id, username, username_clean
 		FROM ' . USERS_TABLE . ' u
 		LEFT JOIN ' . USER_GROUP_TABLE . ' g 
 		ON (g.user_id = u.user_id)
@@ -286,6 +335,7 @@ $m_l = convertBytes(ini_get('memory_limit'));
 	if ($chk_aspam == 'Yes')
 	{
 		echo '<strong>[b]Anti-Spam Measures[/b]</strong><br />';
+		echo 'Authentication method: ' . $config['auth_method'] . '<br />';
 		echo 'Spambot countermeasures for registrations: ' . ($config['enable_confirm'] ? 'Yes' : 'No') . '<br />';
 		// Convert config numerical value to appropriate text
 		switch($config['require_activation'])
@@ -458,8 +508,8 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		echo 'Upload directory: ' . $config['upload_path'] . '<br />';
 		if ($config['upload_path'] != '')
 			{
-				echo 'Upload directory permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 
-				($config['upload_path']))), -3) . ' <br />';
+				echo 'Upload directory permissions: ' . substr(decoct(fileperms($phpbb_root_path . 
+				($config['upload_path']))), 2) . ' <br />';
 			}
 		echo 'Attachment display order: ' . ($config['display_order']  ? 'Ascending' : 'Descending') . '<br />';
 		// Sizes are stored as bytes to convert we use the phpBB get_formatted_filesize()
@@ -473,25 +523,39 @@ $m_l = convertBytes(ini_get('memory_limit'));
 			$quota1 = 'Host limit';
 			}
 		echo 'Total attachment quota: ' . $quota1 . '<br />';
-
 		// Determining the actual maximum file size is too difficult and will vary between users so we'll make
 		// a guesstimate based on the lowest of upload_max_filesize, post_max_size, and memory_limit
 		$php_max_file =  min($u_m_f, $p_m_s, $m_l);
 		$f_php_max_file = get_formatted_filesize($php_max_file);
-		if ($config['max_filesize'] > $php_max_file && $config['max_filesize'] != '0')
+//		$config_max_filesize = if ($config['max_filesize'] != '0')
+//								{
+//									get_formatted_filesize($config['max_filesize']);
+//								}
+//								else 
+//								{
+//									'unset';
+//								}
+		if ($config['max_filesize'] != '0')
 		{
-			echo 'Maximum file size of ' . get_formatted_filesize($config['max_filesize']) . ' 
-			exceeds estimated server PHP limit of ' . $f_php_max_file .'<br />';
-		}
-		elseif ($config['max_filesize'] < $php_max_file && $config['max_filesize'] != '0')
-		{
-			echo 'Maximum file size of ' . get_formatted_filesize($config['max_filesize']) . ' 
-			less than estimated server PHP limit of ' . $f_php_max_file .'<br />';
+			if($config['max_filesize'] > $php_max_file)
+			{
+				echo 'Maximum file size of ' . get_formatted_filesize($config['max_filesize']) . ' 
+				exceeds estimated server PHP limit of ' . $f_php_max_file .'<br />';
+			}
+			elseif ($config['max_filesize'] < $php_max_file)
+			{
+				echo 'Maximum file size of ' . get_formatted_filesize($config['max_filesize']) . ' 
+				less than estimated server PHP limit of ' . $f_php_max_file .'<br />';
+			}
+			else //($config['max_filesize'] == $php_max_file)
+			{
+				echo 'Maximum file size of ' . get_formatted_filesize($config['max_filesize']) . ' 
+				equals estimated server PHP limit of ' . $f_php_max_file .'<br />';
+			}
 		}
 		else
 		{
-			echo 'Maximum file size of ' . get_formatted_filesize($config['max_filesize']) . ' 
-			equals estimated server PHP limit of ' . $f_php_max_file .'<br />';
+			echo 'Maximum file size is unset so will equal estimated server PHP limit of ' . $f_php_max_file .'<br />';
 		}
 		if ($config['max_filesize_pm'] != '0')
 			{
@@ -529,20 +593,41 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		$result = $db->sql_query($sql);
 		while($row = $db->sql_fetchrow($result))
 		{
-			if ($row['max_filesize'] > $config['max_filesize'] && $config['max_filesize'] != '0')
+			if ($config['max_filesize'] != '0')
 			{
-				echo 'Max filesize for extension group ' . (ucfirst(strtolower($row['group_name']))) . 
-				': [color=#FF0000]' . get_formatted_filesize($row['max_filesize']) . '[/color]<br />';
+				if ($row['max_filesize'] > $config['max_filesize'])
+				{
+					echo 'Max filesize for extension group ' . (ucfirst(strtolower($row['group_name']))) . 
+					': [color=#FF0000]' . get_formatted_filesize($row['max_filesize']) . '[/color]<br />';
+				}
+				elseif ($row['max_filesize'] < $config['max_filesize'])
+				{
+					echo 'Max filesize for extension group ' . (ucfirst(strtolower($row['group_name']))) . 
+					': [color=#008000]' . get_formatted_filesize($row['max_filesize']) . '[/color]<br />';
+				}
+				else
+				{
+					echo 'Max filesize for extension group ' . (ucfirst(strtolower($row['group_name']))) . 
+					': ' . get_formatted_filesize($row['max_filesize']) . '<br />';
+				}
 			}
-			elseif ($row['max_filesize'] < $config['max_filesize'] && $config['max_filesize'] != '0')
+			else 
 			{
-				echo 'Max filesize for extension group ' . (ucfirst(strtolower($row['group_name']))) . 
-				': [color=#008000]' . get_formatted_filesize($row['max_filesize']) . '[/color]<br />';
-			}
-			else
-			{
-				echo 'Max filesize for extension group ' . (ucfirst(strtolower($row['group_name']))) . 
-				': ' . get_formatted_filesize($row['max_filesize']) . '<br />';
+				if ($row['max_filesize'] > $php_max_file)
+				{
+					echo 'Max filesize for extension group ' . (ucfirst(strtolower($row['group_name']))) . 
+					': [color=#FF0000]' . get_formatted_filesize($row['max_filesize']) . '[/color]<br />';
+				}
+				elseif ($row['max_filesize'] < $php_max_file)
+				{
+					echo 'Max filesize for extension group ' . (ucfirst(strtolower($row['group_name']))) . 
+					': [color=#008000]' . get_formatted_filesize($row['max_filesize']) . '[/color]<br />';
+				}
+				else
+				{
+					echo 'Max filesize for extension group ' . (ucfirst(strtolower($row['group_name']))) . 
+					': ' . get_formatted_filesize($row['max_filesize']) . '<br />';
+				}			
 			}
 		}
 		$db->sql_freeresult($result);
@@ -558,6 +643,65 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		}
 		$db->sql_freeresult($result);
 		echo '<br />';
+	}
+	if ($chk_automod == 'Yes')
+	{
+		echo '<strong>[b]AutoMOD Settings[/b]</strong><br />';
+		if (file_exists($phpbb_root_path . 'includes/functions_mods.' . $phpEx))
+		{
+			global $table_prefix;
+			define('MODS_TABLE', $table_prefix . 'mods');
+			echo 'AutoMOD version: ' . ($config['automod_version']  ? $config['automod_version'] : 'Not found') . '<br />';
+			switch ($config['write_method'])
+				{
+				 case 1:
+					echo 'Write method: Direct<br />';
+					if (!is_writable("{$phpbb_root_path}common.$phpEx") || !is_writable("{$phpbb_root_path}adm/style/acp_groups.html"))
+					{
+						echo 'File system not writable<br />';
+					}				
+					break;
+				 case 2:
+					echo 'Write method: FTP<br />';
+					switch (@$config['ftp_method'])
+					{
+					case "ftp":
+						echo 'Upload method: FTP<br />';
+						break;
+					case "ftp_fsock":
+						echo 'Upload method: Simple Socket<br />';
+						break;						
+					}
+					echo 'FTP host: ' . @$config['ftp_host'] . '<br />'; 
+					echo 'FTP username: ' . @$config['ftp_username'] . '<br />'; 
+					echo 'Path to phpBB: ' . @$config['ftp_root_path'] . '<br />'; 
+					echo 'FTP port: ' . @$config['ftp_port'] . '<br />'; 
+					echo 'FTP timeout: ' . @$config['ftp_timeout'] . '<br />'; 
+					break;
+				 case 3:
+					echo 'Write method: Compressed File Download<br />';
+					echo 'Compressed file type: ' . $config['compress_method'] . '<br />';
+					break;
+				 default:
+					echo 'Write method: Not known<br />';
+					break;
+				}
+			echo 'File permissions: ' . @$config['am_file_perms'] . '<br />';
+			echo 'Directory permissions: ' . @$config['am_dir_perms'] . '<br />';
+			echo 'Preview changes: ' . (@$config['preview_changes'] ? 'Yes' : 'No') . '<br />';
+			echo '[c]/store/mods/[/c] permissions: ' . substr(decoct(fileperms($phpbb_root_path . 'store/mods')), 2) .
+					 ' <br />';			
+			// Count the MODs
+			$sql = 'SELECT COUNT(*) AS mod_cnt FROM ' . MODS_TABLE . '';
+			$result = $db->sql_query($sql);
+			$mod_cnt = (int) $db->sql_fetchfield('mod_cnt');
+			echo 'MODs in mods table: ' . $mod_cnt . '<br /><br />';
+			$db->sql_freeresult($result);
+		}
+		else
+		{
+			echo '[c]/includes/functions_mods.php[/c] not found<br />AutoMOD is not correctly installed<br /><br />';
+		}
 	}
 	if ($chk_avatar == 'Yes')
 	{
@@ -582,14 +726,14 @@ $m_l = convertBytes(ini_get('memory_limit'));
 					echo 'Avatar storage path: ' . $config['avatar_path'] . '<br />';
 		if ($config['avatar_path'] != '')
 			{
-				echo 'Avatar storage folder permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 
-				($config['avatar_path']))), -3) . ' <br />';
+				echo 'Avatar storage folder permissions: ' . substr(decoct(fileperms($phpbb_root_path . 
+				($config['avatar_path']))), 2) . ' <br />';
 			}
 		echo 'Avatar gallery path: ' . $config['avatar_gallery_path'] . '<br />';
 		if ($config['avatar_gallery_path'] != '')
 			{
-				echo 'Avatar gallery folder permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 
-				($config['avatar_gallery_path']))), -3) . ' <br />';
+				echo 'Avatar gallery folder permissions: ' . substr(decoct(fileperms($phpbb_root_path . 
+				($config['avatar_gallery_path']))), 2) . ' <br />';
 			}
 		$can_upload = ($config['allow_avatar_upload'] && file_exists($phpbb_root_path . $config['avatar_path'])
 			&& phpbb_is_writable($phpbb_root_path . $config['avatar_path']) && (@ini_get('file_uploads') || 
@@ -623,8 +767,15 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		echo 'Database port: ' . $dbport . '<br />';
 		echo 'Database name: ' . $dbname . '<br />';
 		echo 'Database user: ' . $dbuser . '<br />';
-		// We don't want the password posted publicly so we'll just count the characters
-		echo 'Database password: (' . mb_strlen($dbpasswd, 'UTF-8') . ' characters) <br />';
+		// We don't want the password posted publicly so we'll check if it is blank
+		if(mb_strlen($dbpasswd, 'UTF-8') > 0)
+		{
+			echo 'Database password: {removed}<br />';
+		}
+		else
+		{
+			echo 'Database password: is blank<br />';
+		}
 		echo 'Table prefix: ' . $table_prefix . '<br />';
 		echo 'Cache ($acm_type): ' . $acm_type . '<br />';
 		echo 'PHP extensions ($load_extensions): ' . $load_extensions . '<br />';
@@ -697,6 +848,87 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		echo '<br />';
 	}
 
+	if($chk_file == 'Yes')
+	{
+		echo '<strong>[b]File Check[/b]</strong><br />';
+		echo 'Check first 5 characters of PHP files (should be: ' . htmlspecialchars('<?php') . ')<br />';
+		/**
+		* Check first line of PHP files to see if it is only "<?php"
+		* (285 PHP files in installed 3.0.12)
+		* Just doing a BOM check wouldn't find blank lines, spaces, code mistakenly added at start of file, ...
+		* Only check the start of the file - that is the most common problem and checking the end is too hard
+		* Based on some code from php.net
+		*/
+		// This iteration method probably won't always be available, so check if class exists
+		$time_start = microtime(true); 
+		if (class_exists('RecursiveDirectoryIterator'))
+		{
+			// SETTINGS
+			$check_extensions = array('php');
+			$compare = htmlspecialchars('<?php');
+			$file = null;
+			$root = dirname(__FILE__);
+			 
+			// MAIN
+			$rit = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($phpbb_root_path), RecursiveIteratorIterator::CHILD_FIRST);
+			try
+			{
+				foreach ($rit as $file)
+				{
+					if ($file->isFile())
+					{
+						$path_parts = pathinfo($file->getRealPath());
+			 
+						if (isset($path_parts['extension']) && in_array($path_parts['extension'],$check_extensions))
+						{
+							$object = new SplFileObject($file->getRealPath());
+							$fchk = htmlspecialchars(file_get_contents($file, NULL, NULL, 0, 5));
+							if (strncasecmp($fchk, $compare, 5) !== 0)
+							{
+								echo str_replace($root, '', $file) . ' first 5 characters: ' . $fchk . ' :[color=#FF0000]NOT correct[/color]<br />';
+							}
+						}
+					}
+				}
+			}
+			catch (Exception $e)
+			{
+				die ('Exception caught: '. $e->getMessage());
+			}
+		}
+		elseif (file_get_contents(__FILE__))
+		// If we can't easily iterate through all files, we'll try with glob, and check 4 layers
+		// N.B. 3.1 has files which are 8+ layers deep, but this method probably won't ever be used for that
+		{
+			echo 'First 5 characters of PHP files (should be ' . htmlspecialchars('<?php') . ') of:<br />';
+			echo '(Only checked first 4 directory layers)<br />';
+			// Check if the functions used is available
+			
+			$compare = htmlspecialchars('<?php');
+		
+			foreach(glob($phpbb_root_path . '{*.php,*/*.php,*/*/*.php,*/*/*/*.php}', GLOB_BRACE) as $filetochk)
+			{
+				$fchk = htmlspecialchars(file_get_contents($filetochk, NULL, NULL, 0, 5));
+			
+				if (strncasecmp($fchk, $compare, 5) !== 0)
+				{
+					 echo $filetochk . ' are: ' . $fchk . ' <span style="color:red">NOT correct</span><br />';
+				}
+			}
+		}
+		else
+		{
+			echo 'Tried methods unsupported by server<br />';
+		}
+		unset($fchk);
+			
+		echo '<br />';
+		$time_end = microtime(true);
+		$totaltime = round($time_end - $time_start, 2);
+		// Usually completes in < 10 secs. A check on a board with 100+ MODs and low resources took 124 secs
+		echo 'File check finished in: ' . $totaltime . ' seconds (wall-clock time)<br /><br />';
+	}
+	
 	if ($chk_other == 'Yes')
 	{
 		echo '<strong>[b]Other Stats[/b]</strong><br />';
@@ -772,60 +1004,63 @@ $m_l = convertBytes(ini_get('memory_limit'));
 	{
 		echo '<strong>[b]Paths and Permissions[/b]</strong><br />';
 		clearstatcache();  // Necessary for getting updated permissions
-		echo '$phpbb_root_path ' . $phpbb_root_path . '<br />';
+		echo '$phpbb_root_path: ' . $phpbb_root_path . '<br />';
 		echo 'Path to this file: ' . __FILE__ . '<br />';
+		if (file_exists($phpbb_root_path . 'install'))
+		{
+			echo '[color=#CC0000][c]/install/[/c] directory exists[/color]<br />'; 
+		}
 		echo 'Post icons path: ' . $config['icons_path'] . '<br />';
 		if ($config['icons_path'] != '')
 		{
-			echo 'Post icons folder permissions: ' . substr(sprintf('%o',
-                    fileperms($phpbb_root_path . ($config['icons_path']))), -3) . ' <br />';
+			echo 'Post icons folder permissions: ' . substr(decoct(
+                    fileperms($phpbb_root_path . ($config['icons_path']))), 2) . ' <br />';
 		}
 		echo 'Ranks path: ' . $config['ranks_path'] . '<br />';
 		if ($config['ranks_path'] != '')
 		{
-			echo 'Ranks folder permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 
-			($config['ranks_path']))), -3) . ' <br />';	
+			echo 'Ranks folder permissions: ' . substr(decoct(fileperms($phpbb_root_path . 
+			($config['ranks_path']))), 2) . ' <br />';	
 		}
 		echo 'Smilies path: ' . $config['smilies_path'] . '<br />';
 		if ($config['smilies_path'] != '')
 		{
-			echo 'Smilies folder permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 
-			($config['smilies_path']))), -3) . ' <br />';
+			echo 'Smilies folder permissions: ' . substr(decoct(fileperms($phpbb_root_path . 
+			($config['smilies_path']))), 2) . ' <br />';
 		}
-		echo 'config.php permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 'config.' . 
-		$phpEx)), -3) . ' file size is: ' . filesize(($phpbb_root_path . 'config.' . $phpEx)) .
+		echo 'config.php permissions: ' . substr(decoct(fileperms($phpbb_root_path . 'config.' . 
+		$phpEx)), 3) . ' file size is: ' . filesize(($phpbb_root_path . 'config.' . $phpEx)) .
             ' bytes<br />';
 		if (file_exists($phpbb_root_path . 'adm/index.' . $phpEx))
 		{
-			echo 'adm/index.php permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path .
-                'adm/index.'
-				. $phpEx)), -3) . ' <br />';
+			echo '/adm/index.php permissions: ' . substr(decoct(fileperms($phpbb_root_path .
+                'adm/index.' . $phpEx)), 3) . ' <br />';
 		}
 		else
 		{
-			echo 'adm/index.php not found<br />';
+			echo '/adm/index.php not found<br />';
 		}
 		if (file_exists($phpbb_root_path . 'includes/captcha'))
 		{
-			echo 'includes/captcha/ permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 
-				'includes/captcha')), -3) . ' <br />';
+			echo '/includes/captcha/ permissions: ' . substr(decoct(fileperms($phpbb_root_path . 
+				'includes/captcha')), 2) . ' <br />';
 		}
 		else
 		{
-			echo 'includes/captcha not found<br />';
+			echo '/includes/captcha not found<br />';
 		}
 		if (file_exists($phpbb_root_path . 'cache'))
 		{
-			echo 'cache/ permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 'cache')), -3) .
+			echo '/cache/ permissions: ' . substr(decoct(fileperms($phpbb_root_path . 'cache')), 2) .
                       ' <br />';
 		}
 		else
 		{
-			echo 'cache/ not found<br />';
+			echo '/cache/ not found<br />';
 		}
 		if (file_exists($phpbb_root_path . 'files'))
 		{
-			echo 'files/ permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 'files')), -3) .
+			echo '/files/ permissions: ' . substr(decoct(fileperms($phpbb_root_path . 'files')), 2) .
                       ' <br />';
 		}
 		else
@@ -834,7 +1069,7 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		}
 		if (file_exists($phpbb_root_path . 'store'))
 		{
-			echo 'store/ permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 'store')), -3) .
+			echo 'store/ permissions: ' . substr(decoct(fileperms($phpbb_root_path . 'store')), 2) .
                       ' <br />';
 		}
 		else
@@ -843,19 +1078,25 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		}
 		if (file_exists($phpbb_root_path . 'store/mods'))
 			{
-			echo 'store/mods permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 
-			'store/mods/')), -3) . ' <br /><br />';
+			echo 'store/mods permissions: ' . substr(decoct(fileperms($phpbb_root_path . 
+			'store/mods/')), 2) . ' <br /><br />';
 		}
 		else
 		{
 			echo 'store/mods/ not found<br /><br />';
 		}
 	}
+	
 	if ($chk_php == 'Yes')
 	{
 		echo '<strong>[b]PHP Values[/b]</strong><br />';
-		echo 'PHP version: ' . phpversion() . '<br />'; 
-		echo 'open_basedir restrictions: ' . (ini_get('open_basedir')) . '<br />';
+		echo 'PHP version: ' . PHP_VERSION . '<br />'; 
+		echo 'PHP safe mode: ' . ((@ini_get('safe_mode') == '1' ||
+			strtolower(@ini_get('safe_mode')) == 'on') ? 'On' : 'Off') . '<br />';
+		if (@ini_get('open_basedir'))
+			{
+				echo 'open_basedir restrictions: ' . (ini_get('open_basedir')) . '<br />';
+			}
 		echo 'upload_max_filesize: ' . get_formatted_filesize($u_m_f) . '<br />';
 		echo 'post_max_size: ' . get_formatted_filesize($p_m_s) . '<br />';
 		echo 'memory_limit: ' . get_formatted_filesize($m_l) . '<br />';
@@ -863,8 +1104,19 @@ $m_l = convertBytes(ini_get('memory_limit'));
 			get_formatted_filesize(min($u_m_f, $p_m_s, $m_l)) . '<br />';
 		echo 'Max execution time: ' . (int)(ini_get('max_execution_time')) . ' secs<br />';
 		echo 'Max input time: ' . (int)(ini_get('max_input_time')) . ' secs<br />';
-		echo 'file_uploads enabled: ' . ((@ini_get('file_uploads') == '1' || 
-		strtolower(@ini_get('file_uploads')) === 'on') ? 'Yes' : 'No') . '<br />';
+		echo 'file_uploads: ' . ((@ini_get('file_uploads') == '1' || strtolower
+			(@ini_get('file_uploads')) == 'on') ? 'Enabled' : 'Disabled') . '<br />';
+		echo 'allow_url_fopen: ' . ((@ini_get('allow_url_fopen') == '1' || 
+			strtolower(@ini_get('allow_url_fopen')) == 'on') ? 'Enabled' : 'Disabled') . '<br />';
+		// Check if some PHP extensions are available
+		$loaded_ext = get_loaded_extensions();
+		$modules_maybe = array('curl', 'ftp', 'pcre', 'zlib', 'mbstring', 'libxml', 'gd', 'mysqli', 'imagick', 'json');
+		$compared = array_diff($modules_maybe, $loaded_ext);
+			foreach($compared as $not_loaded)
+			{
+				echo $not_loaded . ' PHP extension not available<br />';
+			}
+			unset($not_loaded);
 		// Check if GD library loaded
 		if (extension_loaded('gd') && function_exists('gd_info'))
 		{
@@ -875,14 +1127,27 @@ $m_l = convertBytes(ini_get('memory_limit'));
 			echo 'GD library not loaded<br />';
 		}
 		// Quick check if ImageMagick "convert" program exists.
-		exec("convert -version", $out, $rcode); 
-		if ($rcode == 0)
+	
+		function exec_enabled() 
 		{
-			echo 'ImageMagick: exists<br />';
+		$disabled = explode(',', ini_get('disable_functions'));
+		return !in_array('exec', $disabled);
+		}
+		if (exec_enabled() == true)
+		{
+			exec("convert -version", $out, $rvar); 
+			if ($rvar == 0)
+			{
+				echo 'ImageMagick: exists<br />';
+			}
+			else
+			{
+				echo 'ImageMagick: not found<br />';
+			}
 		}
 		else
 		{
-			echo 'ImageMagick: not found<br />';
+			echo 'Check if ImageMagick operating not made, exec() disabled on server<br />';
 		}
 		// A check to see if getimagesize is working on remote file
 		$dimensions = '';
@@ -1010,7 +1275,7 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		function extract_current_hostname()
 		{
 			global $config;
-				// Get hostname
+			// Get hostname
 			$host = (!empty($_SERVER['HTTP_HOST'])) ? $_SERVER['HTTP_HOST'] : ((!empty($_SERVER['SERVER_NAME']))
 				? $_SERVER['SERVER_NAME'] : getenv('SERVER_NAME'));
 
@@ -1128,7 +1393,7 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		{
 			if ($row['module_langname'])
 			{
-				echo 'Disabled module: ' . $row['module_class'] . ': ' . $row['module_basename'] . ': ' . 
+				echo 'Disabled module(s): ' . $row['module_class'] . ': ' . $row['module_basename'] . ': ' . 
 				$row['module_langname'] . '<br />';
 			}
 		}
@@ -1146,7 +1411,7 @@ $m_l = convertBytes(ini_get('memory_limit'));
 	{
 		echo '<strong>[b]Styles Info[/b]</strong><br />';
 		clearstatcache();
-		$templatefile = "{$phpbb_root_path}styles/prosilver/template/not_overall_header.html";
+		$templatefile = "{$phpbb_root_path}styles/prosilver/template/overall_header.html";
 		if (file_exists($templatefile))
 		{
 			if (is_writable($templatefile)) 
@@ -1164,8 +1429,8 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		}
 		if (file_exists($phpbb_root_path . 'images/spacer.gif'))
 		{
-			echo '/images_spacer.gif permissions: ' . substr(sprintf('%o', fileperms($phpbb_root_path . 
-				'images/spacer.gif')), -3) . ' <br />';
+			echo '/images/spacer.gif permissions: ' . substr(decoct(fileperms($phpbb_root_path . 
+				'images/spacer.gif')), 2) . ' <br />';
 		}
 		else
 		{
@@ -1173,8 +1438,8 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		}
 		if (file_exists($phpbb_root_path . 'styles/prosilver/imageset/icon_online.gif'))
 		{
-			echo '/styles/prosilver/imageset/icon_online.gif permissions: ' . substr(sprintf('%o',
-				fileperms($phpbb_root_path . 'styles/prosilver/imageset/icon_online.gif')), -3) . ' <br />';
+			echo '/styles/prosilver/imageset/icon_online.gif permissions: ' . substr(decoct(
+				fileperms($phpbb_root_path . 'styles/prosilver/imageset/icon_online.gif')), 2) . ' <br />';
 		}
 		else
 			{
@@ -1182,8 +1447,8 @@ $m_l = convertBytes(ini_get('memory_limit'));
 			}
 			if (file_exists($phpbb_root_path . 'styles/prosilver/theme/images/icon_faq.gif'))
 			{
-				echo '/styles/prosilver/theme/images/icon_faq.gif permissions: ' . substr(sprintf('%o',
-					fileperms($phpbb_root_path . 'styles/prosilver/theme/images/icon_faq.gif')), -3) . ' <br />';
+				echo '/styles/prosilver/theme/images/icon_faq.gif permissions: ' . substr(decoct(
+					fileperms($phpbb_root_path . 'styles/prosilver/theme/images/icon_faq.gif')), 2) . ' <br />';
 			}
 		else
 		{
@@ -1258,7 +1523,7 @@ else
 echo '<fieldset><legend><strong>If the checkbox is ticked and you press Delete the ' . basename(__FILE__) . ' 
 file will be deleted</strong></legend>';
 echo '<form action="' . basename(__FILE__) . '" method="post">';
-echo '<label><input type="checkbox" name="chkDelete" value="Yes" checked="checked"/>
+echo '<label><input type="checkbox" name="chkDelete" value="Yes" checked="checked" required/>
     &nbsp;Delete this file&nbsp;</label>';
 echo '<p><button type="submit" class="button red";>Delete</button></p>';
 echo '</form>';
@@ -1266,33 +1531,32 @@ echo '</fieldset>';
 if($chk_delete == 'Yes')
 {
 	// Have to give the message before deleting the file because if successful there is no file to return a message
-	echo '<p style="width: 770px; margin-left: 10px; padding-left: 10px; background-color: #F08080">If no other message shows below this then file DELETED</p>';
+	echo '<p style="color: #FFFFFF; width: 770px; margin-left: 10px; padding-left: 10px;
+		background-color: #8B0000">		If no other message shows below this then file is DELETED</p>';
 	// We'll try to change file permissions just to make sure they are sufficient, then unlink the file
 	chmod(__FILE__, 0777);
+	clearstatcache();
 	@unlink(__FILE__);  // Eat any errors 
 	// Windows IIS servers apparently have a problem with unlinking recently created files.
     // If file still exists give a message
-		if (file_exists(__FILE__))
-		{
-			// Try to change permissions back to a safer 644
-			chmod(__FILE__, 0644);
-			echo '<p style="width: 770px; margin-left: 10px; padding-left: 10px; font-size: 1.3em; background-color: #F08080">File could not be deleted. You will need to manually delete the
-			    file from the server.</p>';
-		}
+	if (file_exists(__FILE__))
+	{
+		// Try to change permissions back to a safer 644
+		chmod(__FILE__, 0644);
+		clearstatcache();
+		echo '<p style="color: #FFFFFF; width: 770px; margin-left: 10px; padding-left: 10px; 
+		font-size: 1.3em; background-color: #8B0000;">File could not be deleted. You will 
+		need to manually delete the file from the server.</p>';
+	}
 }
 else 
 {
-	echo '<p style="width: 770px; margin-left: 10px; padding-left: 10px; background-color: #98FB98">File NOT deleted</p>';
+	echo '<p style="width: 770px; margin-left: 10px; padding-left: 10px; background-color: #98FB98;">File NOT deleted</p>';
 }
-
-// Create a link to the board index. Really not necessary, but ...
-// Is the user using HTTPS?
-$index_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https://' : 'http://';
-// Complete the URL
-$index_url .= $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/index.' . $phpEx;
-
-// echo the URL
 echo '<br />';
+// Create a link to the board index. Really not necessary, but ...
+$index_url = $phpbb_root_path . 'index.' . $phpEx;
+// Show the link
 echo '<a style="margin-left: 700px"; href="' . $index_url . '">Board Index</a>';
 echo '</body>';
 echo '</html>';
