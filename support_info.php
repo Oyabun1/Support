@@ -421,7 +421,10 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		case 'phpbb_keycaptcha':
 			$captcha_id = 'KeyCAPTCHA';
 			break;
-			case 'phpbb_captcha_math':
+		case 'phpbb_solvemedia':
+			$captcha_id = 'Solve Media Captcha Puzzle';
+			break;
+		case 'phpbb_captcha_math':
 			$captcha_id = 'Crazy Maths CAPTCHA';
 			break;
 		// May have missed some so ...
