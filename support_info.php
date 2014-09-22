@@ -1,6 +1,6 @@
 <?php
 // Copyright © Oyabun1 2013
-// version 1.5.9
+// version 1.6.1
 // license http://opensource.org/licenses/GPL-2.0 GNU General Public License v2
 
 define('IN_PHPBB', true);
@@ -441,6 +441,7 @@ $m_l = convertBytes(ini_get('memory_limit'));
 			$gdversion = $gdinfoarray['GD Version'];
 			echo 'GD library version: ' . $gdinfoarray['GD Version'] . '<br />';
 			echo 'GD Image (.png) support: ' . (($gdinfoarray['PNG Support'] == true) ? 'Yes' : 'No') . '<br />';
+			echo 'PHP imagecreatetruecolor() exists: ' . (function_exists('imagecreatetruecolor')  ? 'Yes' : 'No') . '<br />';
 		}
 		else
 		{
@@ -1157,6 +1158,7 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		echo 'PHP version: ' . PHP_VERSION . '<br />'; 
 		echo 'PHP safe mode: ' . ((@ini_get('safe_mode') == '1' ||
 			strtolower(@ini_get('safe_mode')) == 'on') ? 'On' : 'Off') . '<br />';
+		echo 'zlib.output_compression: ' . (@ini_get('zlib.output_compression') ? 'On' : 'Off') . '<br />';	
 		if (@ini_get('open_basedir'))
 			{
 				echo 'open_basedir restrictions: ' . (ini_get('open_basedir')) . '<br />';
@@ -1183,7 +1185,6 @@ $m_l = convertBytes(ini_get('memory_limit'));
 			}
 			unset($not_loaded);
 		// Quick check if ImageMagick "convert" program exists.
-	
 		function exec_enabled() 
 		{
 		$disabled = explode(',', ini_get('disable_functions'));
@@ -1476,13 +1477,8 @@ else
 		echo 'Script path: ' . $script_path . '<br /><br />';
 		echo 'Server type/version (OS): ' . ((getenv('SERVER_SOFTWARE')) ?
                 getenv('SERVER_SOFTWARE') : '') . '<br />';	
-	
-
-	
-	
-	
-	
-}		echo 'GZip compression enabled: ' . ($config['gzip_compress'] ? 'Yes' : 'No') . '<br />';
+}		
+		echo 'GZip compression enabled: ' . ($config['gzip_compress'] ? 'Yes' : 'No') . '<br />';
 		echo 'Compression available in PHP: ' . (function_exists('ob_gzhandler') ||
                ini_get('zlib.output_compression') ? 'Yes' : 'No') . '<br />';
 		$sql = 'SELECT config_name, config_value FROM ' . CONFIG_TABLE . ' WHERE config_name = "ip_check"';
