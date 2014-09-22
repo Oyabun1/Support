@@ -6,6 +6,9 @@ Support
 ####avatar_checker.php####
 Makes checks and provides information regarding a user avatar.
 
+####cache_destroy.php####
+clearstatcache(), phpBB cache, and parmissions cache
+
 ####captcha_reset.php####
 Sets the phpBB CAPTCHA to simple image
 
