@@ -929,16 +929,16 @@ $m_l = convertBytes(ini_get('memory_limit'));
 			}
 		}
 		elseif (file_get_contents(__FILE__))
-		// If we can't easily iterate through all files, we'll try with glob, and check 4 layers
-		// N.B. 3.1 has files which are 8+ layers deep, but this method probably won't ever be used for that
+		// If we can't easily iterate through all files, we'll try with glob, and check 5 nodes
+		// N.B. 3.1 has files which are 8+ nodes deep, but this method probably won't ever be used for that
 		{
 			echo 'First 5 characters of PHP files (should be ' . htmlspecialchars('<?php') . ') of:<br />';
-			echo '(Only checked first 4 directory layers)<br />';
+			echo '(Only checked first 5 directory nodes)<br />';
 			// Check if the functions used is available
 			
 			$compare = htmlspecialchars('<?php');
 		
-			foreach(glob($phpbb_root_path . '{*.php,*/*.php,*/*/*.php,*/*/*/*.php}', GLOB_BRACE) as $filetochk)
+			foreach(glob($phpbb_root_path . '{*.php,*/*.php,*/*/*.php,*/*/*/*.php,*/*/*/*/*.php}', GLOB_BRACE) as $filetochk)
 			{
 				$fchk = htmlspecialchars(file_get_contents($filetochk, NULL, NULL, 0, 5));
 			
@@ -1642,8 +1642,6 @@ else
 		}
 		$db->sql_freeresult($result);
 		echo '<br />';
-		$pageURL = 'http';
-		echo ' . $pageURL .';
 	}
 echo '</div>';
 echo '</fieldset>';
