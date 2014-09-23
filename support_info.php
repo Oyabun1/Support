@@ -1173,6 +1173,7 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		echo 'Max input time: ' . (int)(ini_get('max_input_time')) . ' secs<br />';
 		echo 'file_uploads: ' . ((@ini_get('file_uploads') == '1' || strtolower
 			(@ini_get('file_uploads')) == 'on') ? 'Enabled' : 'Disabled') . '<br />';
+		echo 'max_input_vars: ' . (int)(ini_get('max_input_vars')) . '<br />';
 		echo 'allow_url_fopen: ' . ((@ini_get('allow_url_fopen') == '1' || 
 			strtolower(@ini_get('allow_url_fopen')) == 'on') ? 'Enabled' : 'Disabled') . '<br />';
 		// Check if some PHP extensions are available
