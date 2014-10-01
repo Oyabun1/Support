@@ -811,7 +811,21 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		echo 'Table prefix: ' . $table_prefix . '<br />';
 		echo 'Cache ($acm_type): ' . $acm_type . '<br />';
 		echo 'PHP extensions ($load_extensions): ' . $load_extensions . '<br />';
-
+		$config_lc = count(file($phpbb_root_path . 'config.' . $phpEx));
+		echo 'config.php line count: ' . $config_lc . ' ';
+		$config_n = ($ascraeus !== false) ? 15 : 16;
+		if ($config_lc == $config_n)
+		{
+			echo '(standard number of lines)<br />';
+		}
+		else if ($config_lc < $config_n)
+		{
+			echo '(' . ($config_n - $config_lc) . ' lines less than standard)<br />';
+		}
+		else
+		{
+			echo '(' . ($config_lc - $config_n)  . ' lines more than standard)<br />';
+		}
 		if (($db->sql_layer = 'mysql4') || ($db->sql_layer = 'mysqli'))
 		{
 			$result = $db->sql_query('SHOW TABLE STATUS LIKE \'' . POSTS_TABLE . '\'');
@@ -1071,9 +1085,9 @@ $m_l = convertBytes(ini_get('memory_limit'));
 				if(in_array('mod_rewrite',apache_get_modules()))
 				echo 'mod_rewrite enabled<br />';
 			}
- $res = 'Module Unavailable';
- if(in_array('mod_rewrite',apache_get_modules())) 
- $res = 'Module Available';
+		$res = 'Module Unavailable';
+		if(in_array('mod_rewrite',apache_get_modules())) 
+		$res = 'Module Available';
 		}
 		echo 'Post icons path: ' . $config['icons_path'] . '<br />';
 		if ($config['icons_path'] != '')
@@ -1094,8 +1108,7 @@ $m_l = convertBytes(ini_get('memory_limit'));
 			($config['smilies_path']))), 2) . ' <br />';
 		}
 		echo 'config.php permissions: ' . substr(decoct(fileperms($phpbb_root_path . 'config.' . 
-		$phpEx)), 3) . ' file size is: ' . filesize(($phpbb_root_path . 'config.' . $phpEx)) .
-            ' bytes<br />';
+		$phpEx)), 3) . '<br />';
 		if (file_exists($phpbb_root_path . 'adm/index.' . $phpEx))
 		{
 			echo '/adm/index.php permissions: ' . substr(decoct(fileperms($phpbb_root_path .
@@ -1171,9 +1184,9 @@ $m_l = convertBytes(ini_get('memory_limit'));
 		echo 'max_file_uploads: ' . (ini_get('max_file_uploads')) . '<br />';
 		echo 'Max execution time: ' . (int)(ini_get('max_execution_time')) . ' secs<br />';
 		echo 'Max input time: ' . (int)(ini_get('max_input_time')) . ' secs<br />';
+		echo 'max_input_vars: ' . (int)(ini_get('max_input_vars')) . '<br />';
 		echo 'file_uploads: ' . ((@ini_get('file_uploads') == '1' || strtolower
 			(@ini_get('file_uploads')) == 'on') ? 'Enabled' : 'Disabled') . '<br />';
-		echo 'max_input_vars: ' . (int)(ini_get('max_input_vars')) . '<br />';
 		echo 'allow_url_fopen: ' . ((@ini_get('allow_url_fopen') == '1' || 
 			strtolower(@ini_get('allow_url_fopen')) == 'on') ? 'Enabled' : 'Disabled') . '<br />';
 		// Check if some PHP extensions are available
