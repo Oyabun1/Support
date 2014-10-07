@@ -302,5 +302,10 @@ if($chk_delete == 'Yes')
 	unset($dead);
 	// Show the count of deleted files
 	echo '<p>Total files deleted: ' . $file_count . '</p>
-		<p>You should now remove the <code>' . basename(__FILE__) . '</code> file from the server.</p>';
+		<p>You should check that this file, <code>' . basename(__FILE__) . '</code>, has been 
+		removed from the server. If not, delete it yourself.</p>';
+
+	// We'll also try to delete this file. It may not work because Windows IIS servers 
+	// can have a problem with unlinking recently created files.
+	@unlink(__FILE__);
 }
