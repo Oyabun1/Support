@@ -1,6 +1,6 @@
 <?php
 // Copyright © Oyabun1 2013
-// version 1.0.5 (3.1.0-RC4)
+// version 1.0.6 (3.1.0-RC5)
 // license http://opensource.org/licenses/GPL-2.0 GNU General Public License v2
 
 define('IN_PHPBB', true);
@@ -49,6 +49,14 @@ if($chk_delete == 'Yes')
 	"assets/plupload/img/done.gif",
 	"assets/plupload/img/throbber.gif",
 	"assets/plupload/img/error.gif",
+	"config/auth_providers.yml",
+	"config/avatars.yml",
+	"config/cron_tasks.yml",
+	"config/migrator.yml",
+	"config/mimetype_guessers.yml",
+	"config/notifications.yml",
+	"config/passwords.yml",
+	"config/profilefields.yml",
 	"includes/acm/acm_file.php",
 	"includes/acm/acm_apc.php",
 	"includes/acm/acm_wincache.php",
@@ -97,6 +105,7 @@ if($chk_delete == 'Yes')
 	"includes/template.php",
 	"language/en/email/group_approved.txt",
 	"language/en/mods/index.htm",
+	"phpbb/di/pass/kernel_pass.php",
 	"phpbb/event/extension_subscriber_loader.php",
 	"style.php",
 	"styles/prosilver/imageset/topic_unread_locked_mine.gif",
