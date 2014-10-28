@@ -1,6 +1,6 @@
 <?php
 // Copyright © Oyabun1 2013
-// version 1.0.6 (3.1.0-RC6)
+// version 1.0.6 (phpBB 3.1.0 Gold)
 // license http://opensource.org/licenses/GPL-2.0 GNU General Public License v2
 
 define('IN_PHPBB', true);
