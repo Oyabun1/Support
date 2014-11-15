@@ -1,5 +1,5 @@
 <?php
-// version 1.1 Oyabun1 2014
+// version 2.1 Oyabun1 2014
 // license http://opensource.org/licenses/GPL-2.0 GNU General Public License v2
 
 define('IN_PHPBB', true);
@@ -19,14 +19,83 @@ if ((int) $user->data['user_type'] !== USER_FOUNDER || !$auth->acl_get('a_'))
 	You need to be logged in as a founder or administrator.');
 }
 
-$sql = 'UPDATE ' . CONFIG_TABLE . '
-SET config_value = "phpbb_captcha_nogd"
-WHERE config_name = "captcha_plugin"';
-$db->sql_query($sql);
+// Some variables to check if 3.1.x
+$version = PHPBB_VERSION;
+$vers_num = '3.1.';
+$ascraeus = strpos($version, $vers_num);
 
+// We'll only change the CAPTCHA if it is not already a default type
+// Grab the CAPTCHA type
+$sql = 'SELECT config_name, config_value FROM ' . CONFIG_TABLE . ' 
+	WHERE config_name = "captcha_plugin"';
+$result = $db->sql_query($sql);
+while($row = $db->sql_fetchrow($result))
+{
+	$captcha_id_value = $row['config_value'];
+}
+	// check if one of the defaults
+	if ($ascraeus === false)
+	{
+		switch($captcha_id_value)
+		{
+			case 'phpbb_captcha_qa':
+				echo '<p style="font-size: 1.2em;">CAPTCHA  is <em>Q&A CAPTCHA Plugin</em> therefore unchanged<p>';
+				break;
+			case 'phpbb_captcha_gd':
+				echo '<p style="font-size: 1.2em;">CAPTCHA  is <em>GD Image</em> therefore unchanged<p>';
+				break;
+			case 'phpbb_captcha_gd_wave':
+				echo '<p style="font-size: 1.2em;">CAPTCHA  is <em>GD 3D Image</em> therefore unchanged<p>';
+				break;
+			case 'phpbb_captcha_nogd':
+				echo '<p style="font-size: 1.2em;">CAPTCHA  is <em>Simple Image</em> therefore unchanged<p>';
+				break;
+			case 'phpbb_recaptcha':
+				echo '<p style="font-size: 1.2em;">CAPTCHA  is <em>ReCAPTCHA</em> therefore unchanged<p>';
+				break;
+			// else change it
+			default:
+				$sql = 'UPDATE ' . CONFIG_TABLE . '
+				SET config_value = "phpbb_captcha_nogd"
+				WHERE config_name = "captcha_plugin"';
+				$db->sql_query($sql);
+				echo '<p style="font-size: 1.2em;">CAPTCHA changed to <em>simple image</em><p>';
+				break;
+		}
+	}
+	else 
+	{
+		switch($captcha_id_value)
+		{
+			case 'core.captcha.plugins.qa':
+				echo '<p style="font-size: 1.2em;">CAPTCHA  is <em>Q&A CAPTCHA Plugin</em> therefore unchanged<p>';
+				break;
+			case 'core.captcha.plugins.gd':
+				echo '<p style="font-size: 1.2em;">CAPTCHA  is <em>GD Image</em> therefore unchanged<p>';
+				break;
+			case 'core.captcha.plugins.gd_wave':
+				echo '<p style="font-size: 1.2em;">CAPTCHA  is <em>GD 3D Image</em> therefore unchanged<p>';
+				break;
+			case 'core.captcha.plugins.nogd':
+				echo '<p style="font-size: 1.2em;">CAPTCHA  is <em>Simple Image</em> therefore unchanged<p>';
+				break;
+			case 'core.captcha.plugins.recaptcha':
+				echo '<p style="font-size: 1.2em;">CAPTCHA  is <em>ReCAPTCHA</em> therefore unchanged<p>';
+				break;
+			// else change it
+			default:
+				$sql = 'UPDATE ' . CONFIG_TABLE . '
+				SET config_value = "core.captcha.plugins.nogd"
+				WHERE config_name = "captcha_plugin"';
+				$db->sql_query($sql);
+				echo '<p style="font-size: 1.2em;">CAPTCHA changed to <em>simple image</em><p>';
+				break;
+		}	
+	}
+$db->sql_freeresult($result);
+
+/// Config value is cached so we'll clear that.
 $cache->purge();
-
-echo '<p style="font-size: 1.2em;">CAPTCHA changed to <em>simple image</em><p>';
 
 // Try to delete this file
 @unlink(__FILE__);  // Eat any errors 
